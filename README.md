@@ -1,6 +1,6 @@
 # DRILLER
 
-DNS C2 Testing, for Pihole DNS server and Linux client, integrated with [Caldera](https://github.com/mitre/caldera).
+DNS C2 Testing, for Pihole DNS server and Linux client, integrated with [CALDERA](https://github.com/mitre/caldera).
 
 ## Reqs and Dependencies
 
@@ -20,4 +20,4 @@ With `sudo`:
 
 ## Credits
 
-Majority of code is based on [cyberghost](https://github.com/illinoistech-itm/cyberghost) and the default agent Ragdoll of Caldera.
+Majority of code is based on [cyberghost](https://github.com/illinoistech-itm/cyberghost) and the default agent Ragdoll of CALDERA.
