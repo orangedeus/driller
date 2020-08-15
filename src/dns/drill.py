@@ -9,7 +9,7 @@ import datetime
 import time
 import socket
 
-from base64 import b64encode, b64decodes
+from base64 import b64encode, b64decode
 import hashlib
 from Crypto import Random
 from Crypto.Cipher import AES
