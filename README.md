@@ -8,7 +8,7 @@ DNS C2 Testing, for Pihole DNS server and Linux client, integrated with [CALDERA
 * PyCryptodome
 * BeautifulSoup4
 * Pihole
-* Caldera
+* CALDERA
 
 The client server should have its port 53 accept UDP connections, and the DNS server accepting UDP connections in port 1004. Modify at your own will.
 
