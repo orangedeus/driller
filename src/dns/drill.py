@@ -46,12 +46,13 @@ class TryLoop:
         self.profile['platform'] = platform
         self.profile['pid'] = pid
         while True:
-            self.profile['results'] = []
-            print('[*] Sending beacon for %s' % self.profile.get('paw', 'unknown'))
-            beacon = self._send_beacon()
-            instructions = self._next_instructions(beacon=beacon)
-            sleep = self._handle_instructions(instructions, sock)
-            time.sleep(sleep)
+            try:
+                self.profile['results'] = []
+                print('[*] Sending beacon for %s' % self.profile.get('paw', 'unknown'))
+                beacon = self._send_beacon()
+                instructions = self._next_instructions(beacon=beacon)
+                sleep = self._handle_instructions(instructions, sock)
+                time.sleep(sleep)
             except Exception as e:
                 print('[-] Operation loop error %s' % e)
                 time.sleep(30)
